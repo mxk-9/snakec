@@ -1,0 +1,11 @@
+build
+exp
+include
+lib
+flake.nix
+flake.lock
+.clangd
+.emacs.*
+src_old
+snake_example.c
+launch_emacs.sh
