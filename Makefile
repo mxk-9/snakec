@@ -4,7 +4,6 @@ CC_LINUX = gcc
 CC_MINGW = x86_64-w64-mingw32-gcc
 CC = $(CC_LINUX)
 
-
 CFLAGS = -Wall -Wextra -std=c99 -O2 -pipe
 
 LDFLAGS_MINGW = -L./lib -lraylib -lopengl32 -lgdi32 -lwinmm
@@ -15,6 +14,7 @@ INCLUDE = -I./raylib
 BUILD = ./build
 NAME = snakec
 FPATH = $(BUILD)/$(NAME)
+EXPATH = $(BUILD)/snake_ex
 
 RAYLIB_TARGET_LINUX = PLATFORM=PLATFORM_DESKTOP
 RAYLIB_TARGET_MINGW = PLATFORM=PLATFORM_DESKTOP PLATFORM_OS=WINDOWS RAYLIB_LIBTYPE=SHARED
@@ -26,13 +26,24 @@ ifeq ($(TARGET),MINGW)
 	LDFLAGS = $(LDFLAGS_MINGW)
 	RAYLIB_TARGET = $(RAYLIB_TARGET_MINGW)
 	FPATH = $(BUILD)/$(NAME).exe
+	EXPATH = $(BUILD)/snake.exe
 endif
 
+.PHONY: buildp
 buildp:
 	if ! [ -d $(BUILD) ]; then \
 		mkdir $(BUILD); \
 	fi
 
+	if ! [ -d obj ]; then \
+		mkdir obj; \
+	fi
+
+	if [[ $(TARGET) == "MINGW" ]]; then \
+		cp -u lib/raylib.dll build; \
+	fi
+
+.PHONY: engine
 engine:
 	make -C raylib CC=$(CC) $(RAYLIB_TARGET)
 	if ! [ -d lib ]; then \
@@ -51,33 +62,37 @@ engine:
 
 	cp raylib/raylib.h raylib/raymath.h raylib/rlgl.h -t include
 
-game.o: src/game.h src/game.c
-	$(CC) $(CFLAGS) -c src/game.h src/game.c $(INCLUDE) $(LDFLAGS)
+obj/%.o: $(wildcard src/*.c src/*.h)
+	$(CC) $(CFLAGS) -c $^ $(INCLUDE) $(LDFLAGS)
+	mv $(wildcard *.o) -t obj
 
-snake.o: src/snake.h src/snake.c
-	$(CC) $(CFLAGS) -c src/snake.h src/snake.c $(INCLUDE) $(LDFLAGS)
+OBJECTS = obj/game.o \
+      obj/snake.o \
+      obj/food.o
 
-all: game.o snake.o src/main.c
+all: $(OBJECTS) src/main.c
 	make engine
 	make buildp
 
-	$(CC) $(CFLAGS) -o $(FPATH) snake.o game.o $(INCLUDE) src/main.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(FPATH) $(OBJECTS) $(INCLUDE) src/main.c $(LDFLAGS)
 
-	if [[ $(TARGET) == "MINGW" ]]; then \
-		cp -u lib/raylib.dll build; \
-	fi
-
+.PHONY: other
 other: snake_example.c
 	make engine
 	make buildp
-	$(CC) $(CFLAGS) -o $(BUILD)/snake_ex $(INCLUDE) snake_example.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(EXPATH) $(INCLUDE) snake_example.c $(LDFLAGS)
 
+.PHONY: clean
 clean:
-	rm -rv *.o
+	rm -rv $(OBJECTS)
 	rm src/game.h.gch
 	rm src/snake.h.gch
+	rm src/food.h.gch
 	rm -rv build
+	rm -rv obj
 	rm -rv include lib
 	make -C raylib clean
 
 .DEFAULT_GOAL := all
+
+.PRECIOUS := %.o Makefile

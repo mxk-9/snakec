@@ -1,22 +1,10 @@
-## Snake-c
-I'm learning C, Raylib
+# Snake-c
+Here I'm learning C and Raylib
 
 # Building
 ```sh
 # for linux
 make
-# for windows
-make mingw
-# or with Microsoft C Compiler
-make windows
+# for windows (with mingw compiler)
+make TARGET=MINGW
 ```
-
-## Из примера
-Змейка -- массив структуры, содержит вектор позиции, размера и скорости
-Отдельный массив, содержащий координаты всех сегментов змейки. Это нужно для
-перемещения всей змейки
-
-Хотя он нахуй не нужен
-
-Причём, обновление происходит каждые 5 кадров, а игра залочена под 60. Это
-управляет скоростью игры
