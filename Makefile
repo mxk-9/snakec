@@ -35,10 +35,6 @@ buildp:
 		mkdir $(BUILD); \
 	fi
 
-	if ! [ -d obj ]; then \
-		mkdir obj; \
-	fi
-
 	if [[ $(TARGET) == "MINGW" ]]; then \
 		cp -u lib/raylib.dll build; \
 	fi
@@ -62,14 +58,20 @@ engine:
 
 	cp raylib/raylib.h raylib/raymath.h raylib/rlgl.h -t include
 
-obj/%.o: $(wildcard src/*.c src/*.h)
-	$(CC) $(CFLAGS) -c $^ $(INCLUDE) $(LDFLAGS)
-	mv $(wildcard *.o) -t obj
 
 OBJECTS = obj/game.o \
-      obj/snake.o \
-      obj/food.o
+		  obj/snake.o \
+          obj/food.o \
+	      obj/wall.o
 
+obj/%.o: $(wildcard src/*.c src/*.h)
+	if ! [ -d obj ]; then \
+		mkdir obj; \
+	fi
+	$(CC) $(CFLAGS) -c $^ $(INCLUDE) $(LDFLAGS)
+	cp $(wildcard *.o) -t obj
+
+.PHONY: all
 all: $(OBJECTS) src/main.c
 	make engine
 	make buildp
@@ -79,19 +81,38 @@ all: $(OBJECTS) src/main.c
 .PHONY: other
 other: snake_example.c
 	make engine
-	make buildp
 	$(CC) $(CFLAGS) -o $(EXPATH) $(INCLUDE) snake_example.c $(LDFLAGS)
 
 .PHONY: clean
 clean:
 	rm -rv $(OBJECTS)
-	rm src/game.h.gch
-	rm src/snake.h.gch
-	rm src/food.h.gch
+	rm src/*.gch
 	rm -rv build
 	rm -rv obj
+	rm *.o
 	rm -rv include lib
 	make -C raylib clean
+
+VERSION=0.0
+.PHONY: release
+release:
+	if ! [ -d release ]; then \
+		mkdir release; \
+	fi
+
+	if [[ $(TARGET) == "LINUX" ]]; then \
+		make all; \
+		cp build/snakec release/snakec_$(VERSION)_x86_64-linux; \
+	fi
+
+	if [[ $(TARGET) == "MINGW" ]]; then \
+		make all TARGET=MINGW || exit; \
+		cp build/snakec.exe build/raylib.dll release; \
+		cd release; \
+		zip snake_$(VERSION)_x86_64-windows.zip snakec.exe raylib.dll; \
+		rm *.exe *.dll; \
+		cd -; \
+	fi
 
 .DEFAULT_GOAL := all
 

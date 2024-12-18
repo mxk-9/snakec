@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "snake.h"
+#include "wall.h"
 #include "food.h"
 #include "stdlib.h"
 #include "stdio.h"
@@ -15,14 +16,16 @@ typedef struct Game {
   bool pause;
   bool game_over;
   Vector2 offset;
-  Vector2 *snakePos;
 } Game;
 
 Game *InitGame();
 void DefaultGameValues(Game *gm);
 void RestartGame(Game *gm, Snake *snake, Food *food);
 void UpdateGame(Game *game, Snake *snake, Food *food);
-void DrawGame(Game *game, Snake *snake, Food *food);
 void UnloadGame(Game *gm, Snake *snake);
 void GetOffset(Game *gm);
+
+void DrawGame(Game *game, Snake *snake, Food *food);
+void DrawGameGrid(Game *game);
+
 Snake *NewSnake(const int snake_skin_type, Game *game);

@@ -8,4 +8,8 @@ typedef struct Food {
   int size;
 } Food;
 
-Food *NewFood(int size, Color color);
+Food *NewFood(const int size, const Color color);
+void DrawFood(const Food *food);
+void SpawnFood(Food *food, const int length, const Vector2 *segments,
+               const int scr_w, const int scr_h, const Vector2 offset,
+               const int square_size);

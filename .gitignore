@@ -1,6 +1,7 @@
 build
 exp
 include
+obj
 lib
 flake.nix
 flake.lock
@@ -8,4 +9,5 @@ flake.lock
 .emacs.*
 src_old
 snake_example.c
-launch_emacs.sh
+*.o
+*.gch
